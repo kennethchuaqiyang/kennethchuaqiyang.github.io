@@ -210,6 +210,36 @@
   .case-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; }
   .case-links a { font-size: 14.5px; font-weight: 500; }
 
+  .tech-details {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+  }
+  .tech-details summary {
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+    list-style: none;
+    user-select: none;
+  }
+  .tech-details summary::-webkit-details-marker { display: none; }
+  .tech-details summary::before { content: '+ technical specification'; }
+  .tech-details[open] summary::before { content: '− technical specification'; }
+  .tech-details .tech-body {
+    margin-top: 12px;
+    font-size: 14.5px;
+    color: var(--graphite);
+  }
+  .tech-details .tech-body p { margin: 0 0 10px; }
+  .tech-details .tech-body code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    background: var(--surface);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
   footer {
     padding: 70px clamp(20px, 5vw, 40px) 50px;
     border-top: 1px solid var(--line);
@@ -281,20 +311,34 @@
     <div class="case-media" data-slot="demo-login"><img src="images/demo-login.png" alt="Demo login portal sign-in page"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
-      <h3 class="case-title">Demo login portal — three frameworks, one target</h3>
+      <h3 class="case-title">A login page that can't afford to break</h3>
       <div class="case-body">
         <p>
-          I built and deployed a login site with admin and customer roles, password and 6-digit
-          passcode auth, then automated the same scenario matrix in three independent frameworks
-          against it — to compare how each one handles the same real testing problem, not to pick a
-          favorite.
+          A broken login page doesn't just annoy one customer — it can lock out everyone at once,
+          right when you can least afford it. I built a login system with the kind of setup most
+          real businesses use (different account types, two ways to sign in) and then checked it the
+          way I'd check a client's: not once, but three separate times, using three different
+          industry-standard testing tools, to see if they'd all agree it was solid. They did.
         </p>
         <p>
-          Playwright (POM, JS) covers a 20-scenario data-driven suite. Robot Framework, using the
-          Browser library, mirrors it with its own 20 scenarios. Raw Selenium WebDriver with pytest
-          runs a 24-test POM suite. All three are wired into their own Jenkins pipeline on a Docker
-          agent, and all three pass.
+          That's the value of bringing someone like me in: instead of trusting one tool's word for
+          it — or worse, finding out from an angry customer — you get independent confirmation the
+          thing works, plus a clear read on which tool is the best long-term fit for your team, before
+          you've spent months building around the wrong one.
         </p>
+        <details class="tech-details">
+          <summary></summary>
+          <div class="tech-body">
+            <p>
+              A login site with admin and customer roles, password and 6-digit passcode auth. The
+              same scenario matrix automated three separate times: Playwright (POM, JS) covers a
+              20-scenario data-driven suite; Robot Framework, using the Browser library, mirrors it
+              with its own 20 scenarios; raw Selenium WebDriver with pytest runs a 24-test POM suite.
+              Each is wired into its own Jenkins pipeline on a Docker agent, so the comparison reflects
+              real CI execution, not just local runs. All three pass.
+            </p>
+          </div>
+        </details>
       </div>
       <div class="case-links">
         <a href="https://kennethchuaqiyang.github.io/demo-login-portal/">Live site</a>
@@ -310,19 +354,33 @@
     <div class="case-media" data-slot="mock-borrow"><img src="images/mock-borrow.png" alt="Postman request showing the mock borrow API rejecting a request that exceeds the borrow limit"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
-      <h3 class="case-title">Mock borrow API — Go backend, dual-framework testing</h3>
+      <h3 class="case-title">A lending limit that never gets bypassed</h3>
       <div class="case-body">
         <p>
-          A Go API server with real business logic behind it: a borrow limit that rejects requests
-          over 200, a SHA-256-signed response header, and Postgres persistence after I migrated it off
-          in-memory storage mid-project.
+          Any system that lends out money, inventory, or credit runs on one non-negotiable rule: the
+          limit has to hold, every single time, with no exceptions slipping through. I built a backend
+          that enforces a hard borrowing cap, then verified that rule two completely independent
+          ways — two different tools, two separate codebases, both checking the same rule — so a bug
+          hiding in one test tool can't quietly pass as "working."
         </p>
         <p>
-          I tested it from two directions at once so the coverage wouldn't depend on one framework's
-          blind spots — a Playwright/TypeScript suite and a Go suite built on the standard library's own
-          <code>net/http</code> client, both running independently against the same live deployment in
-          Jenkins.
+          This is the same category of check you'd want on anything that touches money or risk — a
+          credit limit, a stock threshold, a rate limit. Getting it wrong once isn't a bad review,
+          it's a real loss.
         </p>
+        <details class="tech-details">
+          <summary></summary>
+          <div class="tech-body">
+            <p>
+              A Go API server with real business logic behind it: a borrow limit that rejects requests
+              over 200, a SHA-256-signed response header, and Postgres persistence after migrating it
+              off in-memory storage mid-project. Tested from two directions at once so coverage
+              wouldn't depend on one framework's blind spots — a Playwright/TypeScript suite and a Go
+              suite built on the standard library's own <code>net/http</code> client, both running
+              independently against the same live deployment in Jenkins.
+            </p>
+          </div>
+        </details>
       </div>
       <div class="case-links">
         <a href="https://mock-borrow-api.onrender.com">Live API</a>
@@ -337,31 +395,48 @@
     <div class="case-media" data-slot="cache-backends" style="aspect-ratio: 1380 / 664;"><img src="images/cache-backends.png" alt="Postman showing X-Cache: MISS on the first request and X-Cache: HIT on the repeated request"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
-      <h3 class="case-title">Cache backend comparison — Redis vs. in-memory vs. Elasticsearch</h3>
+      <h3 class="case-title">Making a slow system fast — without breaking trust in the data</h3>
       <div class="case-body">
         <p>
-          I built the same cache-aside API three times, once against each of three genuinely different
-          cache technologies, all sharing one Postgres database as the real source of truth — so the
-          behavioral differences between them would be observable in running code, not just a diagram.
+          Every growing app hits the same wall: the database gets hit too often and things slow down.
+          The standard fix is caching — keeping a fast copy of the answer close by. Done wrong, though,
+          caching quietly hands customers stale or incorrect information, which is worse than being
+          slow. I built and tested the same caching setup three different ways, on three different
+          technologies, to prove the fix actually works and stays correct the moment the underlying
+          data changes.
         </p>
         <p>
-          Redis (via Upstash) gives active, server-side TTL expiration. The in-memory version is a
-          mutex-protected Go map with lazy expiration and no state shared across restarts. Elasticsearch
-          also does lazy expiration, via a timestamp field, with an explicit delete on update. I covered
-          all three — cache miss, cache hit, and update-triggered invalidation — with dual test suites
-          in Go and Playwright.
+          This is the kind of decision that costs real money either way: cache too little and
+          infrastructure bills climb, cache it wrong and customers see incorrect information. I can
+          tell you which approach fits your system, and prove it holds up before it ever reaches
+          production.
         </p>
-        <div class="callout">
-          <strong>Bug found:</strong> Playwright's default setup ran every test across three browser
-          projects at once — meaningless for pure API tests, and it caused real races against the shared
-          cache and database row. Fixed by pinning to a single project and <code>workers: 1</code>.
-        </div>
-        <p>
-          Elasticsearch stays local rather than deployed: the official client rejects the free managed
-          tier's underlying OpenSearch engine outright, and the genuinely-Elasticsearch free tier is only
-          a 14-day trial. Rather than force a deployment that misrepresents the trade-off, it's tested
-          locally against real Elasticsearch and Kibana instead.
-        </p>
+        <details class="tech-details">
+          <summary></summary>
+          <div class="tech-body">
+            <p>
+              The same cache-aside API built three times, once against each of three genuinely
+              different cache technologies, all sharing one Postgres database as the real source of
+              truth. Redis (via Upstash) gives active, server-side TTL expiration. The in-memory
+              version is a mutex-protected Go map with lazy expiration and no state shared across
+              restarts. Elasticsearch also does lazy expiration, via a timestamp field, with an
+              explicit delete on update. Covered all three — cache miss, cache hit, and
+              update-triggered invalidation — with dual test suites in Go and Playwright.
+            </p>
+            <p>
+              <strong>Bug found:</strong> Playwright's default setup ran every test across three
+              browser projects at once — meaningless for pure API tests, and it caused real races
+              against the shared cache and database row. Fixed by pinning to a single project and
+              <code>workers: 1</code>.
+            </p>
+            <p>
+              Elasticsearch stays local rather than deployed: the official client rejects the free
+              managed tier's underlying OpenSearch engine outright, and the genuinely-Elasticsearch
+              free tier is only a 14-day trial. Rather than force a deployment that misrepresents the
+              trade-off, it's tested locally against real Elasticsearch and Kibana instead.
+            </p>
+          </div>
+        </details>
       </div>
       <div class="case-links">
         <a href="https://redis-cache-mock-api.onrender.com">Redis API (live)</a>
@@ -377,27 +452,43 @@
     <div class="case-media" data-slot="load-test" style="aspect-ratio: 1405 / 740;"><img src="images/load-test.png" alt="Artillery load test summary showing 49% of requests failing with ERR_SOCKET_TIMEOUT under ramped load"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
-      <h3 class="case-title">Distributed load testing — isolating a real bottleneck</h3>
+      <h3 class="case-title">Finding your system's real breaking point — before customers do</h3>
       <div class="case-body">
         <p>
-          An earlier same-machine load test threw vague failures — <code>EADDRINUSE</code>, generic
-          socket timeouts. Instead of assuming those were real application problems, I re-ran the exact
-          same test from a genuinely separate machine to find out.
+          Most teams find out how much traffic their system can actually handle the hard way — during
+          a sale, a launch, or a sudden spike — right when it's too late to fix. I ran a controlled
+          load test from a genuinely separate machine, so the results reflect what real customers
+          would experience rather than an artifact of testing from the same box, and pushed traffic up
+          until something gave.
         </p>
         <p>
-          I deployed the target app to a cloud VM (Oracle Cloud's free tier had no capacity in-region,
-          so I pivoted to a $5/month Vultr instance), tracked down a two-layer firewall lockout where the
-          cloud provider's firewall and Ubuntu's own <code>ufw</code> were both blocking the port
-          independently, then ran Artillery from my laptop against the VM: a single-VU baseline, then a
-          ramp from 2 to 300 requests per second.
+          The result: the system handles everyday traffic without issue, but has a real ceiling —
+          past a certain point, requests start timing out. That's a concrete number a business can
+          plan around. Know your ceiling and you know when to scale ahead of time, instead of finding
+          out from downtime.
         </p>
-        <p>
-          Baseline: 34ms, zero failures. Under load, about 49% of requests failed specifically with
-          <code>ERR_SOCKET_TIMEOUT</code> — a far more precise signal than before — while every request
-          that did succeed stayed fast, around 31ms at the 95th percentile. That points to a genuine
-          concurrency ceiling on the single-vCPU VM at roughly 118-175 requests/second sustained, not a
-          processing-speed problem and not an artifact of the original test setup.
-        </p>
+        <details class="tech-details">
+          <summary></summary>
+          <div class="tech-body">
+            <p>
+              An earlier same-machine load test threw vague failures — <code>EADDRINUSE</code>, generic
+              socket timeouts. Instead of assuming those were real application problems, I re-ran the
+              exact same test from a genuinely separate machine to find out. Deployed the target app to
+              a cloud VM (Oracle Cloud's free tier had no capacity in-region, so I pivoted to a
+              $5/month Vultr instance), tracked down a two-layer firewall lockout where the cloud
+              provider's firewall and Ubuntu's own <code>ufw</code> were both blocking the port
+              independently, then ran Artillery from my laptop against the VM: a single-VU baseline,
+              then a ramp from 2 to 300 requests per second.
+            </p>
+            <p>
+              Baseline: 34ms, zero failures. Under load, about 49% of requests failed specifically with
+              <code>ERR_SOCKET_TIMEOUT</code> — a far more precise signal than before — while every
+              request that did succeed stayed fast, around 31ms at the 95th percentile. That points to
+              a genuine concurrency ceiling on the single-vCPU VM at roughly 118-175 requests/second
+              sustained, not a processing-speed problem and not an artifact of the original test setup.
+            </p>
+          </div>
+        </details>
       </div>
       <div class="case-links">
         <a href="https://github.com/kennethchuaqiyang/artillery-distributed-load-test">Repo &amp; full findings</a>
@@ -409,17 +500,32 @@
     <div class="case-media" data-slot="jenkins-infra" style="aspect-ratio: 1920 / 840;"><img src="images/jenkins-infra.png" alt="Jenkins dashboard showing all eight CI pipelines passing"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
-      <h3 class="case-title">Jenkins CI/CD infrastructure</h3>
+      <h3 class="case-title">The foundation everything else runs on</h3>
       <div class="case-body">
         <p>
-          This is the CI system every other project on this page actually runs on — self-hosted, not a
-          managed SaaS pipeline, and rebuilt once already as the underlying hosting changed under it.
+          None of the projects on this page would mean much if they only worked once, on my machine.
+          I run my own continuous integration system — the same kind of infrastructure engineering
+          teams rely on to catch problems automatically every time code changes, instead of trusting
+          someone to remember to test manually. It's already had to survive a real infrastructure
+          failure and get rebuilt from scratch, which is its own kind of proof it holds up.
         </p>
         <p>
-          A local Docker Jenkins instance plus a distributed controller/agent setup, originally hosted on
-          a DigitalOcean droplet and migrated to Oracle Cloud's Always Free tier after that droplet was
-          deleted. It targets saucedemo.com with Playwright as its reference test suite.
+          This is the difference between "it worked when I tested it" and "it's continuously
+          verified" — the second one is what actually protects a business from a broken change
+          reaching customers.
         </p>
+        <details class="tech-details">
+          <summary></summary>
+          <div class="tech-body">
+            <p>
+              The CI system every other project on this page actually runs on — self-hosted, not a
+              managed SaaS pipeline. A local Docker Jenkins instance plus a distributed
+              controller/agent setup, originally hosted on a DigitalOcean droplet and migrated to
+              Oracle Cloud's Always Free tier after that droplet was deleted. It targets
+              saucedemo.com with Playwright as its reference test suite.
+            </p>
+          </div>
+        </details>
       </div>
       <div class="case-links">
         <a href="https://github.com/kennethchuaqiyang/testjenkins">Repo</a>
