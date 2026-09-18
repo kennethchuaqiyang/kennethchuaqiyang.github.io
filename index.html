@@ -131,16 +131,40 @@
     border-top: 1px solid var(--line);
   }
 
+  .tabs-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 48px;
+  }
+  .tab-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--graphite);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active {
+    color: var(--accent);
+    background: var(--accent-dim);
+    border-color: var(--accent);
+  }
+
   .case {
-    display: grid;
+    display: none;
     grid-template-columns: 1fr 1fr;
     gap: 44px;
     align-items: center;
-    margin-bottom: 84px;
+    margin-bottom: 20px;
   }
+  .case.active-tab { display: grid; }
   .case:nth-child(even) .case-media { order: 2; }
   @media (max-width: 800px) {
-    .case { grid-template-columns: 1fr; gap: 22px; margin-bottom: 56px; }
+    .case { grid-template-columns: 1fr; gap: 22px; }
     .case:nth-child(even) .case-media { order: 0; }
   }
 
@@ -245,7 +269,15 @@
 
   <p class="section-heading" id="work">selected work</p>
 
-  <div class="case">
+  <div class="tabs-nav" role="tablist">
+    <button class="tab-btn" data-tab="demo-login" role="tab">Login Portal</button>
+    <button class="tab-btn" data-tab="mock-borrow" role="tab">Mock Borrow API</button>
+    <button class="tab-btn" data-tab="cache-backends" role="tab">Caching</button>
+    <button class="tab-btn" data-tab="load-test" role="tab">Load Testing</button>
+    <button class="tab-btn" data-tab="jenkins-infra" role="tab">Jenkins CI</button>
+  </div>
+
+  <div class="case" data-tab="demo-login">
     <div class="case-media" data-slot="demo-login"><img src="images/demo-login.png" alt="Demo login portal sign-in page"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
@@ -274,7 +306,7 @@
     </div>
   </div>
 
-  <div class="case">
+  <div class="case" data-tab="mock-borrow">
     <div class="case-media" data-slot="mock-borrow"><img src="images/mock-borrow.png" alt="Postman request showing the mock borrow API rejecting a request that exceeds the borrow limit"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
@@ -301,7 +333,7 @@
     </div>
   </div>
 
-  <div class="case">
+  <div class="case" data-tab="cache-backends">
     <div class="case-media" data-slot="cache-backends" style="aspect-ratio: 1380 / 664;"><img src="images/cache-backends.png" alt="Postman showing X-Cache: MISS on the first request and X-Cache: HIT on the repeated request"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
@@ -341,7 +373,7 @@
     </div>
   </div>
 
-  <div class="case">
+  <div class="case" data-tab="load-test">
     <div class="case-media" data-slot="load-test" style="aspect-ratio: 1405 / 740;"><img src="images/load-test.png" alt="Artillery load test summary showing 49% of requests failing with ERR_SOCKET_TIMEOUT under ramped load"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
@@ -373,7 +405,7 @@
     </div>
   </div>
 
-  <div class="case">
+  <div class="case" data-tab="jenkins-infra">
     <div class="case-media" data-slot="jenkins-infra" style="aspect-ratio: 1920 / 840;"><img src="images/jenkins-infra.png" alt="Jenkins dashboard showing all eight CI pipelines passing"></div>
     <div class="case-text">
       <span class="case-status">pass</span>
@@ -407,5 +439,32 @@
   </div>
 </footer>
 
+<script>
+  (function () {
+    var tabButtons = document.querySelectorAll('.tab-btn');
+    var cases = document.querySelectorAll('.case[data-tab]');
+
+    function showTab(id) {
+      cases.forEach(function (el) {
+        el.classList.toggle('active-tab', el.getAttribute('data-tab') === id);
+      });
+      tabButtons.forEach(function (btn) {
+        var isActive = btn.getAttribute('data-tab') === id;
+        btn.classList.toggle('active', isActive);
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+    }
+
+    tabButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        showTab(btn.getAttribute('data-tab'));
+      });
+    });
+
+    var initial = (location.hash || '').replace('#', '');
+    var validIds = Array.prototype.map.call(tabButtons, function (b) { return b.getAttribute('data-tab'); });
+    showTab(validIds.indexOf(initial) !== -1 ? initial : validIds[0]);
+  })();
+</script>
 </body>
 </html>
