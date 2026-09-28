@@ -2,6 +2,7 @@
 title: "Spec-to-Test-Case Agent - Findings & Fixes Log"
 author: "Kenneth Chua"
 date: "2026-09-22"
+render_with_liquid: false
 ---
 
 # Spec-to-Test-Case Agent — Findings & Fixes Log

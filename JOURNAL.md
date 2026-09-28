@@ -1,3 +1,8 @@
+---
+title: "Spec-to-Test-Case Agent - Fix & Enhancement Journal"
+render_with_liquid: false
+---
+
 # Spec-to-Test-Case Agent — Fix & Enhancement Journal
 
 A dated log of every failure mode found and fixed.
