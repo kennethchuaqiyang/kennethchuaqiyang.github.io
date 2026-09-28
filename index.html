@@ -305,6 +305,7 @@
     <button class="tab-btn" data-tab="cache-backends" role="tab">Caching</button>
     <button class="tab-btn" data-tab="load-test" role="tab">Load Testing</button>
     <button class="tab-btn" data-tab="jenkins-infra" role="tab">Jenkins CI</button>
+    <button class="tab-btn" data-tab="test-case-gen" role="tab">AI Test Case Generator</button>
   </div>
 
   <div class="case" data-tab="demo-login">
@@ -529,6 +530,59 @@
       </div>
       <div class="case-links">
         <a href="https://github.com/kennethchuaqiyang/testjenkins">Repo</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="case" data-tab="test-case-gen">
+    <div class="case-media" data-slot="test-case-gen">business discussion → user story → test case → automation script</div>
+    <div class="case-text">
+      <span class="case-status local">side project</span>
+      <h3 class="case-title">Automating the line from a business discussion to a working test script</h3>
+      <div class="case-body">
+        <p>
+          The path from "here's what the business wants" to "here's the automation script that
+          verifies it" normally runs through several handoffs — someone writes a spec, someone else
+          drafts user stories, someone else writes test cases, someone else automates them — and each
+          handoff is a place detail quietly gets lost. As a side project, I set out to automate that
+          whole chain: take the raw, unstructured version of a business discussion and carry it,
+          machine-assisted, all the way from a draft user story to a test case to an automation script.
+        </p>
+        <p>
+          It turned into less of an "AI writes the tests" exercise and more of a lesson in how much
+          scaffolding a model needs before its output is trustworthy enough to build on. Left alone,
+          it would confidently produce user stories and test cases that contradicted themselves or
+          quietly misjudged a business rule — the kind of mistake a QA engineer catches instantly but
+          an LLM won't flag on its own. Most of the actual engineering here was building the guardrails
+          around it, not the prompts.
+        </p>
+        <details class="tech-details">
+          <summary></summary>
+          <div class="tech-body">
+            <p>
+              A Python pipeline on the OpenAI Agents SDK, running two LLM stages: a Gatherer/Analyzer
+              that drafts user stories from raw source material (meeting notes, wireframe text, a
+              business discussion), and a Generator/Reviewer that turns those into structured test
+              cases and re-reviews its own suite for gaps, looping until satisfied or a round cap is
+              hit. A deterministic layer in plain Python — no model call — sits on top of the LLM
+              output, catching and correcting specific, unambiguous mistakes in the model's own text,
+              plus a code-level convergence check that stops the review loop once it's mostly
+              re-flagging old gaps rather than finding new ones. The final leg — test case to
+              automation script — currently emits deterministic Playwright skeletons (steps and
+              expected results filled in, selectors left as <code>TODO</code> for a human); extending
+              that stage with the model itself is next.
+            </p>
+            <p>
+              <strong>Bug found:</strong> The model would write an <code>expected_result</code> plainly
+              describing an error, then confidently tag the same test case "success" anyway. Fixed with
+              a deterministic reconciliation pass that reads the case's own text and corrects the
+              category before it ships, rather than trusting the model's self-grading.
+            </p>
+          </div>
+        </details>
+      </div>
+      <div class="case-links">
+        <a href="https://claude.ai/artifact/6Q55iz83c9bue5odvGhj8S">Full engineering journal</a>
       </div>
     </div>
   </div>
