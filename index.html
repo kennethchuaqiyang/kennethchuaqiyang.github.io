@@ -305,7 +305,7 @@
     <button class="tab-btn" data-tab="cache-backends" role="tab">Caching</button>
     <button class="tab-btn" data-tab="load-test" role="tab">Load Testing</button>
     <button class="tab-btn" data-tab="jenkins-infra" role="tab">Jenkins CI</button>
-    <button class="tab-btn" data-tab="test-case-gen" role="tab">AI Test Case Generator</button>
+    <button class="tab-btn" data-tab="test-case-gen" role="tab">Agentic QA Pipeline</button>
   </div>
 
   <div class="case" data-tab="demo-login">
@@ -535,7 +535,7 @@
   </div>
 
   <div class="case" data-tab="test-case-gen">
-    <div class="case-media" data-slot="test-case-gen"><img src="images/test-case-gen-terminal.png" alt="Terminal output showing the pipeline's Reviewer finding coverage gaps across six review rounds and writing the final test case files"></div>
+    <div class="case-media" data-slot="test-case-gen"><img src="images/test-case-gen-ui.png" alt="The pipeline's web UI mid-run, showing a plain-language progress list (creating user stories, creating test cases, creating automation test scripts) above the finished output file listing"></div>
     <div class="case-text">
       <span class="case-status local">side project</span>
       <h3 class="case-title">Automating the line from a business discussion to a working test script</h3>
@@ -556,6 +556,13 @@
           an LLM won't flag on its own. Most of the actual engineering here was building the guardrails
           around it, not the prompts.
         </p>
+        <p>
+          What started as "generate test cases" grew into the full chain running end to end: the
+          automation stage now generates real Playwright scripts against a site map captured from the
+          live app, not just TODO-stubbed selectors — and anything it can't confidently map gets
+          flagged for manual review rather than silently guessing. The whole thing also got a small
+          web UI wrapped around it, so running or reviewing a pass no longer means opening a terminal.
+        </p>
         <details class="tech-details">
           <summary></summary>
           <div class="tech-body">
@@ -568,15 +575,26 @@
               output, catching and correcting specific, unambiguous mistakes in the model's own text,
               plus a code-level convergence check that stops the review loop once it's mostly
               re-flagging old gaps rather than finding new ones. The final leg — test case to
-              automation script — currently emits deterministic Playwright skeletons (steps and
-              expected results filled in, selectors left as <code>TODO</code> for a human); extending
-              that stage with the model itself is next.
+              automation — pairs an LLM step-mapping pass with a deterministic reconciliation layer:
+              anything it can't safely resolve against the real page (a selector, a field type, an
+              assertion it can't justify) gets rendered as a commented-out <code>test.skip()</code>
+              with the specific reason, rather than a script that might silently do the wrong thing. A
+              small FastAPI + vanilla-JS UI wraps the same pipeline functions the CLI uses — zero new
+              backend logic, just a form instead of flags and a live view of progress instead of a
+              terminal.
             </p>
             <p>
               <strong>Bug found:</strong> The model would write an <code>expected_result</code> plainly
               describing an error, then confidently tag the same test case "success" anyway. Fixed with
               a deterministic reconciliation pass that reads the case's own text and corrects the
               category before it ships, rather than trusting the model's self-grading.
+            </p>
+            <p>
+              <strong>Finding:</strong> The UI's first version showed raw pipeline log output by
+              default — accurate, but meaningless to anyone who isn't debugging it. Replaced the
+              default view with plain-language stage lines ("Creating test cases...", "Automation test
+              scripts created (5/40 ready, 35 flagged)"), with the full debug log still one click away
+              rather than removed.
             </p>
           </div>
         </details>

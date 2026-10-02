@@ -69,10 +69,60 @@ Pairs with `FINDINGS_AND_FIXES.md` in the repo, which has the full technical det
 
 **Also confirmed this day:** the two content bugs left deliberately unfixed back in fix #26 turned out to be resolved on their own by the OpenAI switch — no further code change needed, just verified by inspection on a fresh run.
 
+## 2026-10-02 — Three per-stage review files, and a web UI
+
+Since the 2026-09-28 snapshot below, the pipeline's final leg — test case to
+automation — grew from a deterministic Playwright-skeleton generator into a
+real LLM step-mapping pass over a site map captured from the live app, paired
+with a deterministic reconciliation layer that renders anything it can't
+safely resolve as a commented-out `test.skip()` with the specific reason,
+rather than a script that might silently do the wrong thing.
+
+32. **Three per-stage review files** — `user_stories_review.md` (Reviewer
+    coverage gaps per round, including rounds that found nothing),
+    `test_cases_review.md` (surfaces any `[NOT PROVIDED BY MODEL]`/
+    `[MALFORMED OUTPUT]` field markers into their own file instead of
+    leaving them buried in the full test case list), and
+    `automation_review.md` (surfaces every `NEEDS_REVIEW` automation case's
+    specific reason). 32 new unit tests, all passing; live-verified across
+    three separate real runs.
+33. **A web UI, Phase 0** — a FastAPI backend + vanilla-JS frontend wrapping
+    the exact same pipeline functions the CLI already calls: zero new
+    backend capability, deliberately. Entry stage (raw material / existing
+    user story / existing test cases) and target output, gated by the same
+    valid-combination matrix as the CLI's own flags, enforced server-side
+    and mirrored client-side. Caught and fixed five real usability bugs
+    from live testing in rapid iteration — a card-alignment CSS bug, no way
+    to append/remove uploaded files across multiple folder picks, a forced-
+    JSON test-case upload when the project already reads CSV, and a hard-
+    required "original source material" upload relaxed to optional with an
+    honestly-labeled fallback — plus one UX finding worth its own line:
+34. **Replacing the default debug-log view with a plain-language progress
+    list** — the UI's first version showed the raw `logger.info`/
+    `logger.warning` feed as its only run output. Accurate, and genuinely
+    useful for debugging, but meaningless to someone who just wants to know
+    whether their test cases are done. Fixed by adding a second, curated
+    progress channel alongside the existing one — plain-language lines
+    ("Creating user stories...", "User stories created.", ...) shown by
+    default, with the full debug log collapsed behind a "Show details"
+    toggle that auto-opens on an error. Nothing stopped being logged; the
+    raw channel just stopped being the first thing shown.
+
 ## Where it stands (as of 2026-09-28)
 
 - **245 unit tests, all passing**, no live model calls required to run the suite.
 - The pipeline has now been run end-to-end (Gatherer/Analyzer → Generator → Reviewer → test cases) on OpenAI for all three example specs, plus higher-round-count variants of two of them.
 - Deliberately parked: mode-dependent field splitting (`Credential` → `Password`/`Passcode`), and cross-type username mismatch coverage (rule 3) — both documented in `FINDINGS_AND_FIXES.md` rather than chased further for now.
 - Open: whether the Reviewer's auto-stop heuristic (fix #31) will actually fire correctly on a run that genuinely plateaus — confirmed so far only on runs that don't, which is itself useful (no false positives) but not the full picture yet.
-- Also open: extending the pipeline's final stage — test case to automation script, currently a deterministic Playwright-skeleton generator — with the model itself, rather than leaving selectors as TODOs for a human to fill in.
+
+## Where it stands (as of 2026-10-02)
+
+- The pipeline now runs end to end from raw source material through to a
+  reviewed, runnable automation suite — not just test cases — with its own
+  web UI instead of requiring the CLI.
+- Open: live multi-page DOM capture from a URL (today's automation stage
+  still needs a pre-captured site map) and Figma-image intake for the
+  raw-material upload — both scoped, neither built yet.
+- Also open: moving this from a local-only tool to something a real user
+  (not just me) can reach — public hosting, plus the secrets/auth/storage
+  work that has to come with making it public.

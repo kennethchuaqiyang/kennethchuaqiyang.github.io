@@ -2605,3 +2605,82 @@ the taxonomy expansion and the header rows are both done. Rule 5 cross-mode
 coverage, formerly this list's item 1, is now covered by fix #15. Two more
 placeholder shapes found in the same run as fix #15's first live test are
 covered by fix #17.)
+
+## 2026-10-02 — Three per-stage review files, and a web UI
+
+Picks up after the 2026-09-28 snapshot above. In between, the pipeline's
+final stage (test case → automation) grew from a deterministic Playwright-
+skeleton generator into a real two-part stage: an LLM step-mapping pass
+against a site map captured from the live app (`capture_dom.py`), followed
+by `reconcile.py`, a deterministic layer that checks each mapped step
+against the real page's element types before it ships - a `SET_SESSION`
+step needs a JSON session object, not a plain string; a `CHECK` step needs
+a checkbox/radio field, not a text input; an assertion-phase step needs an
+`ASSERT_*` action, not a page-mutating one. Anything it can't safely resolve
+renders as a commented-out `test.skip()` with the specific reason attached,
+rather than a script that might silently do the wrong thing.
+
+**32. Three per-stage review files.** Each pipeline stage already tracks
+*why* something didn't make it cleanly into its output - the Reviewer's
+per-round gap list, a `TestCase`'s `[NOT PROVIDED BY MODEL]`/
+`[MALFORMED OUTPUT]` field markers, an `AutomationCase.review_reasons` list
+for anything `NEEDS_REVIEW` - but that reasoning was only ever visible
+buried inside the main output file, not surfaced on its own. Added three
+dedicated files, one per stage: `user_stories_review.md` (every Reviewer
+round's findings, including rounds that found nothing - "the Reviewer
+looked and approved" is now as visible as "the Reviewer found gaps"),
+`test_cases_review.md` (every flagged field pulled into its own file), and
+`automation_review.md` (every `NEEDS_REVIEW` case's specific reason).
+32 new unit tests (28 for the first file's source-hint-flagging behavior
+plus the two newer files), all passing. Live-verified three ways: a
+`--gather-from` run, a `--cases-file --automate` run, and one full
+`--spec ... --automate` chain run, checking all three files' real content
+against each run's actual output, not just that the files existed.
+
+**33. A web UI, Phase 0.** `ui/backend/runner.py` is a thin orchestration
+layer with one hard rule, stated in its own module docstring: zero new
+pipeline capability. Every real call it makes (`analyze_spec`,
+`gather_behaviors`, `run_pipeline`, `generate_automation`, every
+`output_writer.py` `write_*` function) is the exact function
+`generate_tests.py`'s CLI already calls - this module only translates an
+uploaded-file-shaped request into the same call sequence `_main_async`
+makes. One real finding from reading `_main_async` closely rather than
+assuming: the "I already have a user story" entry point is *not* a clean
+standalone starting point the way "I already have test cases" is -
+`run_pipeline` always needs the original spec/source text too (the
+Reviewer and the deterministic field-extraction/parameter-coverage passes
+read it directly, not just the behaviors list), so that entry point needs
+two uploads, not one. Made the second upload optional rather than hard-
+required: when it's left out, a fallback reconstructs a stand-in spec text
+from the behaviors' own `statement`/`source_hint` fields - a real but
+strictly weaker substitute, labeled as such rather than presented as
+equivalent.
+
+Five real usability bugs found and fixed from live testing, in rapid
+iteration: a `flex-direction: column` container with default `align-items`
+was stretch-centering a fixed-size radio input against its text block
+(fixed by switching to a row layout with an explicit text wrapper); a
+native `<input type="file">` can't append across separate picks - a second
+"Choose Files" click replaces rather than adds to the selection (fixed with
+a small JS component that accumulates picks into an in-memory list,
+clearing the input's own value after each change so the dialog can reopen
+cleanly); test-case upload was hard-coded to JSON even though the project
+already has a working CSV path (`output_writer.read_csv`); and the above
+optional-source-material fallback.
+
+**34. Replacing the default debug-log view with a plain-language progress
+list.** The UI's first version routed `pipeline.py`'s own
+`logger.info`/`logger.warning` output straight into the page as its only
+run feedback - the same thing `-v` shows in a terminal. Useful for
+debugging, meaningless for anyone who just wants to know whether their test
+cases are done ("why are we showing people the terminal?"). Fixed by adding
+a second, curated callback (`progress`, alongside the existing `log`) that
+`runner.execute()` calls at each real stage boundary with a short plain-
+language line - "Creating user stories...", "User stories created.",
+"Creating test cases...", "Test cases created.", "Creating automation test
+scripts...", "Automation test scripts created (N/M ready to run, K flagged
+for manual review)." The frontend shows these by default and keeps the full
+raw log collapsed behind a "Show details" toggle that auto-opens if a run
+errors out. Nothing stopped being logged - the progress line is additive,
+not a replacement, so debugging still starts one click away rather than
+being designed out.
